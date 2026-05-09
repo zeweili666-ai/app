@@ -176,8 +176,14 @@ function _switchToPhase(phase) {
     container.classList.remove('hidden');
 
     if (phase !== CONSTANTS.GAME_PHASE.EVENT_CARD) {
+      const canMatchMedia = typeof window.matchMedia === 'function';
+      const shouldReduceMotion = canMatchMedia && (
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches ||
+        window.matchMedia('(max-width: 640px)').matches
+      );
+
       container.style.opacity = '0';
-      container.style.transition = 'opacity 0.6s ease';
+      container.style.transition = `opacity ${shouldReduceMotion ? '0.18s' : '0.45s'} ease`;
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           container.style.opacity = '1';
@@ -199,7 +205,7 @@ function _switchToPhase(phase) {
       CONSTANTS.GAME_PHASE.ENDING,
     ].includes(phase);
     
-    container.style.paddingTop = needsPadding ? 'var(--status-offset, 4.5rem)' : '';
+    container.style.paddingTop = needsPadding ? '4.5rem' : '';
   }
 
   // 6. 正式挂载目标 Screen

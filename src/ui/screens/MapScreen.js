@@ -129,10 +129,10 @@ export class MapScreen {
     }).join('');
 
     return `
-      <div id="map-layout" class="w-full h-full flex overflow-hidden bg-gray-50">
+      <div class="w-full h-full flex overflow-hidden bg-gray-50">
 
         <!-- 左侧：地图区（65%），改为 flex-col 布局 -->
-        <div id="map-area" class="relative flex-[65] flex flex-col overflow-hidden bg-gray-100">
+        <div class="relative flex-[65] flex flex-col overflow-hidden bg-gray-100">
           
           <!-- 地图主体占据剩余空间 -->
           <div id="map-wrap" class="relative flex-1 w-full overflow-hidden">
@@ -157,7 +157,7 @@ export class MapScreen {
             </div>
 
             <!-- 结束本月按钮 -->
-            <div id="end-month-wrap" class="absolute bottom-6 right-6 z-40">
+            <div class="absolute bottom-6 right-6 z-40">
               <button
                 id="btn-end-month"
                 class="xjtlu-btn xjtlu-btn--primary text-sm shadow-lg"

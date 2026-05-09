@@ -17,8 +17,7 @@
 html {
   /* 【新增】：全局等比例放大 15% (16px -> 18.4px) */
   /* 所有使用 rem 的字体、内边距、卡片宽度都会跟着完美放大，杜绝溢出 */
-  font-size: 115%;
-  --status-offset: 4.5rem;
+  font-size: 115%; 
 }
 
 html, body, #app {
@@ -653,294 +652,89 @@ svg.lucide {
   50%       { box-shadow: 0 2px 16px rgba(0,75,155,0.7), 0 0 0 4px rgba(0,75,155,0.3); }
 }
 
-#app {
-  min-height: 100dvh;
-  height: 100dvh;
+/* Mobile title screen: keep the first view compact and cheap to paint. */
+.title-screen {
+  min-height: 100%;
 }
 
-@media (max-width: 768px) {
+.title-screen__inner {
+  padding-top: max(1rem, env(safe-area-inset-top));
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
+.title-screen__panel {
+  animation-delay: 0.06s;
+}
+
+@media (max-width: 640px) {
   html {
     font-size: 100%;
-    --status-offset: 8.6rem;
   }
 
-  .screen {
-    min-width: 0;
+  .title-screen {
+    align-items: flex-start;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
-  .xjtlu-btn {
-    min-height: 44px;
-    justify-content: center;
-    padding: 0.625rem 1rem;
-    white-space: normal;
-    line-height: 1.25;
+  .title-screen__inner {
+    min-height: 100%;
+    justify-content: flex-start;
+    gap: 1rem;
+    padding: 4.25rem 1.25rem 1.25rem;
+    max-width: 24rem;
   }
 
-  .status-bar {
-    align-content: flex-start;
+  .title-screen__brand {
+    gap: 0.625rem;
+  }
+
+  .title-screen__mascot {
+    width: 7.5rem !important;
+    height: 7.5rem !important;
+    filter: none;
+  }
+
+  .title-screen__panel {
     align-items: stretch;
-    flex-wrap: wrap;
-    gap: 0.55rem 0.75rem;
-    max-height: var(--status-offset);
-    overflow-x: hidden !important;
-    overflow-y: auto;
-    padding: calc(env(safe-area-inset-top, 0px) + 0.5rem) 0.75rem 0.55rem;
-  }
-
-  .status-bar > .w-px {
-    display: none;
-  }
-
-  .status-bar > .shrink-0:first-child {
-    flex: 0 0 auto;
-    min-width: 4.75rem;
-  }
-
-  .status-bar > .flex-1 {
-    flex: 1 1 calc(33.333% - 0.75rem);
-    min-width: 5.25rem;
-    padding-inline: 0;
-  }
-
-  .status-bar span[style*="font-size"] {
-    font-size: 0.68rem !important;
-    gap: 0.25rem;
-    margin-bottom: 0.35rem;
-  }
-
-  .status-bar .lucide {
-    width: 0.85rem;
-    height: 0.85rem;
-  }
-
-  #sb-buffs {
-    flex: 1 1 100%;
-    min-height: 0;
-    max-height: 1.75rem;
-    overflow-x: auto;
-    overflow-y: hidden;
-    padding-bottom: 0.1rem;
-  }
-
-  .ap-pip-group {
-    gap: 0.18rem;
-  }
-
-  .ap-pip {
-    width: 9px !important;
-    height: 9px !important;
-    border-width: 2px !important;
-  }
-
-  #global-settings-wrap {
-    top: calc(env(safe-area-inset-top, 0px) + 0.5rem) !important;
-    right: 0.75rem !important;
-  }
-
-  #global-settings-wrap.top-20 {
-    top: calc(var(--status-offset) + 0.5rem) !important;
-  }
-
-  #global-settings-btn {
-    width: 2.5rem;
-    height: 2.5rem;
-  }
-
-  #global-settings-menu {
-    max-width: calc(100vw - 1.5rem);
-    white-space: normal;
-  }
-
-  #modal-layer {
-    align-items: flex-end;
-    justify-content: center;
-    padding: 1rem;
-    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 1rem);
-  }
-
-  #modal-card {
-    max-width: none;
-    margin: 0;
-    border-radius: 1rem;
-    padding: 1.1rem;
-  }
-
-  #modal-card .flex.gap-3.justify-end {
-    flex-direction: column-reverse;
-  }
-
-  #modal-card .xjtlu-btn {
-    width: 100%;
-  }
-
-  #map-layout {
-    flex-direction: column;
-    min-height: 0;
-  }
-
-  #map-area {
-    flex: 0 0 47%;
-    min-height: 250px;
-    border-bottom: 2px solid rgba(0, 51, 102, 0.12);
-  }
-
-  #map-wrap {
-    min-height: 0;
-  }
-
-  #right-sidebar {
-    flex: 1 1 auto;
-    min-height: 0;
-    border-left: 0;
-    border-top: 2px solid #e5e7eb;
-  }
-
-  #info-panel {
-    flex: 1 1 55%;
-    min-height: 0;
-  }
-
-  #player-status-panel {
-    flex: 0 1 45%;
-    height: auto !important;
-    min-height: 11rem;
-  }
-
-  #timeline-bar {
-    padding: 0.4rem 0.35rem;
-    overflow-x: auto;
-  }
-
-  #timeline-bar > div {
-    min-width: 420px;
-  }
-
-  #end-month-wrap {
-    right: 0.75rem !important;
-    bottom: calc(env(safe-area-inset-bottom, 0px) + 0.75rem) !important;
-  }
-
-  #btn-end-month {
-    min-height: 42px;
-    padding: 0.55rem 0.8rem;
-    font-size: 0.78rem;
-  }
-
-  .map-pin {
-    min-width: 34px;
-    min-height: 30px;
-    padding: 5px 8px;
-    font-size: 10px;
-  }
-
-  .map-pin__label {
-    font-size: 10px;
-  }
-
-  #action-popover {
-    position: fixed !important;
-    left: 50% !important;
-    top: auto !important;
-    right: auto !important;
-    bottom: calc(env(safe-area-inset-bottom, 0px) + 0.75rem) !important;
-    width: min(92vw, 22rem);
-    transform: translateX(-50%) !important;
-    z-index: 9901 !important;
-  }
-
-  #action-popover > div {
-    width: 100%;
-  }
-
-  #action-popover .action-btn {
-    width: 100% !important;
-    min-height: 44px;
-  }
-
-  #action-popover .absolute[class*="border-"] {
-    display: none;
-  }
-
-  .vn-dialog-box {
-    min-height: 30vh;
-    max-height: 52vh;
-    padding: 1rem;
-    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 1rem);
-    overflow-y: auto;
-  }
-
-  .vn-dialog-box__text {
-    font-size: 0.95rem;
-    line-height: 1.65;
-  }
-
-  .vn-choices {
-    left: 50%;
-    right: auto;
-    width: calc(100vw - 1.5rem);
-    min-width: 0;
-    max-height: 58vh;
-    overflow-y: auto;
-    gap: 0.55rem;
-  }
-
-  .vn-choice-btn,
-  .vn-choices button,
-  .vn-choices label {
-    border-radius: 0.75rem;
-  }
-
-  .vn-choices button {
-    padding: 0.8rem 1rem;
-  }
-
-  .summary-card {
-    max-height: calc(100dvh - 2rem);
-    overflow-y: auto;
-    padding: 1.25rem;
-  }
-
-  .tag-badge {
+    gap: 1rem;
     max-width: 100%;
-    white-space: normal;
-    line-height: 1.2;
+  }
+
+  .title-screen__panel h1 {
+    font-size: 2rem;
+    line-height: 1.1;
+  }
+
+  .title-screen__panel p {
+    text-wrap: balance;
+  }
+
+  .title-screen .xjtlu-btn {
+    min-height: 2.875rem;
+    justify-content: center;
+    touch-action: manipulation;
+  }
+
+  .title-decor {
+    display: none;
   }
 }
 
-@media (max-width: 420px) {
-  html {
-    --status-offset: 9.4rem;
+@media (prefers-reduced-motion: reduce) {
+  .fade-in,
+  .stat-bump,
+  .floating-text,
+  .map-hotspot--action,
+  .map-pin--action {
+    animation: none !important;
   }
 
-  .status-bar > .flex-1 {
-    flex-basis: calc(50% - 0.75rem);
-  }
-
-  #map-area {
-    flex-basis: 44%;
-    min-height: 220px;
-  }
-
-  #player-status-panel {
-    min-height: 9.5rem;
-  }
-
-  #timeline-bar > div {
-    min-width: 360px;
-  }
-
-  .map-pin {
-    min-width: 30px;
-    min-height: 28px;
-    padding-inline: 6px;
-  }
-
-  .map-pin__icon {
-    width: 10px;
-    height: 10px;
-  }
-
-  .map-pin__label {
-    font-size: 9px;
+  .xjtlu-btn,
+  .vn-choice-btn,
+  .map-hotspot,
+  .map-pin,
+  .health-bar__fill {
+    transition-duration: 0.01ms !important;
   }
 }

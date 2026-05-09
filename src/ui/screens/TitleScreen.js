@@ -94,11 +94,11 @@ export class TitleScreen {
         全屏白底，垂直居中，
         左侧：吉祥物 + 装饰，右侧：标题 + 按钮组
       -->
-      <div class="w-full h-full flex items-center justify-center
+      <div class="title-screen w-full h-full flex items-center justify-center
                   bg-white relative overflow-hidden">
 
         <!-- 背景装饰：右下角大圆 -->
-        <div class="
+        <div class="title-decor title-decor--large
           absolute -bottom-32 -right-32
           w-96 h-96 rounded-full
           bg-xjtlu-navy opacity-[0.04]
@@ -106,7 +106,7 @@ export class TitleScreen {
         "></div>
 
         <!-- 背景装饰：左上角小圆 -->
-        <div class="
+        <div class="title-decor title-decor--small
           absolute -top-16 -left-16
           w-64 h-64 rounded-full
           bg-xjtlu-blue opacity-[0.04]
@@ -114,7 +114,7 @@ export class TitleScreen {
         "></div>
 
         <!-- 主内容区：两栏 -->
-        <div class="
+        <div class="title-screen__inner
           relative z-10
           flex flex-col md:flex-row
           items-center justify-center
@@ -124,10 +124,10 @@ export class TitleScreen {
         ">
 
           <!-- ── 左栏：吉祥物 + 学院标签 ── -->
-          <div class="flex flex-col items-center gap-4 animate-fade-in">
+          <div class="title-screen__brand flex flex-col items-center gap-4 fade-in">
 
             <!-- 吉祥物 SVG -->
-            <div id="title-mascot" class="w-44 h-44 drop-shadow-lg">
+            <div id="title-mascot" class="title-screen__mascot w-44 h-44 drop-shadow-lg">
               ${this._getMascotSVG()}
             </div>
 
@@ -145,7 +145,7 @@ export class TitleScreen {
           </div>
 
           <!-- ── 右栏：标题 + 按钮组 ── -->
-          <div class="flex flex-col items-start gap-6 animate-fade-in w-full max-w-xs">
+          <div class="title-screen__panel flex flex-col items-start gap-6 fade-in w-full max-w-xs">
             <div class="flex flex-col gap-1">
               <p class="text-xs font-bold text-xjtlu-blue tracking-[0.25em] uppercase">XJTLU Postgrad Simulator</p>
               <h1 class="text-4xl font-black text-xjtlu-navy leading-tight">
