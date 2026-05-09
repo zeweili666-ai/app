@@ -1,0 +1,305 @@
+/**
+ * @fileoverview 顶部固定状态栏组件 (王权极简版)
+ */
+
+import { CONSTANTS } from '../../utils/constants.js';
+import { t } from '../../utils/i18n.js';
+// 【修复】：补充导入 StateManager
+import * as StateManager from '../../state/StateManager.js';
+
+export class StatusBar {
+  constructor() {
+    /** @type {HTMLElement|null} */
+    this._container = null;
+    /** @type {Object<string, number>} 记录上一次的数值用于对比闪烁 */
+    this._prevValues = {};
+  }
+
+  // ───────────────────────────────────────────────────────────
+  // 生命周期
+  // ───────────────────────────────────────────────────────────
+
+  mount(container) {
+    this._container = container;
+    container.innerHTML = this._buildHTML();
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+  }
+
+  render(state) {
+    if (!this._container) return;
+
+    this._updateAP(state);
+    
+    // 使用 CONSTANTS 中定义的 MAX 值
+    this._updateGenericBar('mental',   state.Mental_Health,   'bg-xjtlu-navy', CONSTANTS.MENTAL_HEALTH_MAX);
+    this._updateGenericBar('physical', state.Physical_Health, 'bg-xjtlu-navy', CONSTANTS.PHYSICAL_HEALTH_MAX);
+    this._updateGenericBar('money',    state.Money,           'bg-xjtlu-navy', CONSTANTS.MONEY_MAX);
+    this._updateGenericBar('academic', state.Academic_Ability,'bg-xjtlu-navy', CONSTANTS.ACADEMIC_ABILITY_MAX);
+    this._updateGenericBar('english',  state.English_Ability, 'bg-xjtlu-navy', CONSTANTS.ENGLISH_ABILITY_MAX);
+    
+    this._updateBuffs(state);
+  }
+
+  // ───────────────────────────────────────────────────────────
+  // HTML 骨架构建
+  // ───────────────────────────────────────────────────────────
+
+  _buildHTML() {
+    return `
+      <div class="status-bar w-full flex items-center gap-5 px-6 py-3
+                  border-b-2 border-xjtlu-navy bg-white
+                  select-none overflow-x-auto">
+
+        <!-- AP 行动点 -->
+        <div class="shrink-0 flex flex-col justify-center min-w-[90px]">
+          <span class="flex items-center gap-1.5 text-gray-500 font-bold mb-1.5" style="font-size: 0.8rem;">
+            <i data-lucide="zap" class="lucide w-4 h-4"></i>
+            ${t('stat_ap')}
+          </span>
+          <div id="sb-ap-pips" class="ap-pip-group"></div>
+        </div>
+        <div class="w-px h-10 bg-gray-200 shrink-0"></div>
+        ${this._buildBarHTML('mental', 'heart', t('stat_mental'))}
+        ${this._buildBarHTML('physical', 'activity', t('stat_physical'))}
+        ${this._buildBarHTML('money', 'banknote', t('stat_money'))}
+        <div class="w-px h-10 bg-gray-200 shrink-0"></div>
+        ${this._buildBarHTML('academic', 'book-open', t('stat_academic'))}
+        ${this._buildBarHTML('english', 'languages', t('stat_english'))}
+        <div class="w-px h-10 bg-gray-200 shrink-0"></div>
+        <div id="sb-buffs" class="flex items-center gap-2 shrink-0"></div>
+      </div>
+    `;
+  }
+
+  _buildBarHTML(id, icon, label) {
+    return `
+      <div class="flex-1 flex flex-col justify-center min-w-[80px] px-1">
+        <span class="flex items-center gap-1.5 text-gray-500 font-bold mb-1.5" style="font-size: 0.8rem;">
+          <i data-lucide="${icon}" class="lucide w-4 h-4"></i>
+          ${label}
+          <!-- 默认加上 opacity-0 -->
+          <span id="sb-${id}-preview-dot" 
+               class="w-3.5 h-3.5 rounded-full bg-gray-400 text-white font-black inline-flex items-center justify-center transition-opacity duration-200 ml-1 shadow-sm opacity-0"
+               style="font-size: 0.55rem; line-height: 0.875rem;">
+          </span>
+        </span>
+        <div class="relative w-full flex items-center">
+          <div class="w-full h-2.5 bg-gray-200 rounded-full overflow-hidden shadow-inner relative">
+            <div id="sb-${id}-fill" class="h-full bg-xjtlu-navy transition-all duration-500 ease-out" style="width: 50%"></div>
+          </div>
+          <div id="sb-${id}-preview-text" class="absolute -top-5 left-1/2 -translate-x-1/2 text-xs font-black transition-opacity duration-200 opacity-0"></div>
+        </div>
+      </div>
+    `;
+  }
+
+  showPreview(effects, hasExactBuff) {
+    if (!this._container || !effects) return;
+    const statMap = { Mental_Health: 'mental', Physical_Health: 'physical', Money: 'money', Academic_Ability: 'academic', English_Ability: 'english' };
+    
+    // 现在 StateManager 已正确导入，这里不会再报错
+    const lang = StateManager.getLang();
+
+    Object.entries(effects).forEach(([stat, delta]) => {
+      if (delta === 0) return;
+      const id = statMap[stat];
+      if (!id) return;
+
+      const isPos = delta > 0;
+      const isLarge = Math.abs(delta) >= 15;
+      const dot = this._container.querySelector(`#sb-${id}-preview-dot`);
+      
+      if (dot) {
+        dot.textContent = lang === 'en' ? (isLarge ? 'B' : 'S') : (isLarge ? '大' : '小');
+        // 安全切换显隐
+        dot.classList.remove('opacity-0');
+        dot.classList.add('opacity-100');
+      }
+
+      if (hasExactBuff) {
+        const textEl = this._container.querySelector(`#sb-${id}-preview-text`);
+        if (textEl) {
+          textEl.textContent = isPos ? `+${delta}` : delta;
+          textEl.className = `absolute -top-5 left-1/2 -translate-x-1/2 text-xs font-black transition-opacity duration-200 opacity-100 ${isPos ? 'text-xjtlu-green' : 'text-xjtlu-red'}`;
+        }
+      }
+    });
+  }
+
+  clearPreview() {
+    if (!this._container) return;
+    const dots = this._container.querySelectorAll('[id$="-preview-dot"]');
+    dots.forEach(dot => {
+      dot.classList.remove('opacity-100');
+      dot.classList.add('opacity-0');
+    });
+    const texts = this._container.querySelectorAll('[id$="-preview-text"]');
+    texts.forEach(text => {
+      text.classList.remove('opacity-100');
+      text.classList.add('opacity-0');
+    });
+  }
+
+  // ───────────────────────────────────────────────────────────
+  // 核心逻辑：进度条更新与闪烁
+  // ───────────────────────────────────────────────────────────
+
+  // 【修改】：强化 max 的默认值和计算逻辑，确保不会出现 NaN 或越界
+  _updateGenericBar(id, value, baseColorClass, max = 100) {
+    const fill = this._container?.querySelector(`#sb-${id}-fill`);
+    if (!fill) return;
+
+    // 强制转换为数字，防止因意外的数据类型导致比例计算错误
+    const safeValue = Number(value) || 0;
+    const safeMax = Number(max) || 100;
+    
+    // 计算百分比并严格限制在 0-100 之间
+    const pct = Math.max(0, Math.min(100, (safeValue / safeMax) * 100));
+    fill.style.width = `${pct}%`;
+
+    const prev = this._prevValues[id];
+    
+    if (prev !== undefined && prev !== safeValue) {
+      const isIncrease = safeValue > prev;
+      const flashColor = isIncrease ? 'bg-xjtlu-green' : 'bg-xjtlu-red';
+
+      fill.classList.remove(baseColorClass);
+      fill.classList.add(flashColor);
+
+      setTimeout(() => {
+        fill.classList.remove(flashColor);
+        fill.classList.add(baseColorClass);
+      }, 400);
+    }
+
+    this._prevValues[id] = safeValue;
+  }
+  _updateAP(state) {
+    const pips = this._container?.querySelector('#sb-ap-pips');
+    if (!pips) return;
+
+    const max = CONSTANTS.AP_MAX_PER_MONTH;
+    const remaining = state.AP;
+
+    pips.innerHTML = Array.from({ length: max }, (_, i) => {
+      const filled = i < remaining;
+      return `<div class="ap-pip ${filled ? 'ap-pip--filled' : 'ap-pip--empty'}"
+                   style="width: 14px; height: 14px; border-width: 3px;"
+                   title="${filled ? '可用' : '已用'}"></div>`;
+    }).join('');
+  }
+
+  // ───────────────────────────────────────────────────────────
+  // Buff 渲染
+  // ───────────────────────────────────────────────────────────
+
+  _updateBuffs(state) {
+    const container = this._container?.querySelector('#sb-buffs');
+    if (!container) return;
+
+    if (!state.activeBuff || state.activeBuff.length === 0) {
+      container.innerHTML = '';
+      return;
+    }
+
+    const lang = StateManager.getLang();
+
+    container.innerHTML = state.activeBuff.map(buff => {
+      const effectDesc = this._describeBuffEffect(buff, lang);
+      const durationText = buff.durationType === 'months' 
+        ? (lang === 'en' ? `${buff.remainingMonths} months left` : `剩余 ${buff.remainingMonths} 个月`) 
+        : (lang === 'en' ? 'Permanent' : '永久效果');
+
+      return `
+        <div class="relative group">
+          <span class="tag-badge tag-badge--blue cursor-default">
+            <i data-lucide="${buff.icon ?? 'star'}" class="lucide w-2.5 h-2.5"></i>
+            ${buff.label}
+          </span>
+          <div class="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-48 p-2.5 rounded-xl bg-xjtlu-navy text-white text-xs leading-relaxed shadow-xl border border-white/10 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-150 z-[9999]">
+            <p class="font-black text-xjtlu-yellow mb-1">${buff.label}</p>
+            ${effectDesc ? `<p class="text-white/80">${effectDesc}</p>` : ''}
+            <p class="text-white/50 mt-1 text-[0.6rem]">${durationText}</p>
+            <div class="absolute bottom-full left-1/2 -translate-x-1/2 border-4 border-transparent border-b-xjtlu-navy"></div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+  }
+
+  _describeBuffEffect(buff, lang) {
+    const effects = buff.effects;
+    if (!effects) return '';
+    const parts = [];
+
+    if (effects.stat_modifier) {
+      const { stat, delta } = effects.stat_modifier;
+      const statLabel = lang === 'en' 
+        ? { English_Ability: 'English', Academic_Ability: 'Academic', Mental_Health: 'Mental', Physical_Health: 'Physical', Money: 'Money' }[stat] ?? stat
+        : { English_Ability: '英语', Academic_Ability: '学力', Mental_Health: '心理', Physical_Health: '身体', Money: '资金' }[stat] ?? stat;
+      const actionDesc = lang === 'en' ? 'Per action' : '每次行动';
+      parts.push(`${actionDesc} ${statLabel} ${delta > 0 ? '+' : ''}${delta}`);
+    }
+
+    if (effects.event_prob_modifier) {
+      const pct = Math.round(effects.event_prob_modifier * 100);
+      const probDesc = lang === 'en' ? 'Event Prob' : '事件概率';
+      parts.push(`${probDesc} ${pct > 0 ? '+' : ''}${pct}%`);
+    }
+
+    return parts.join('；');
+  }
+
+  // ───────────────────────────────────────────────────────────
+  // 飘字触发 (隐藏具体数字)
+  // ───────────────────────────────────────────────────────────
+
+  triggerFloatingText(stat, delta, label) {
+    const targetMap = {
+      Mental_Health:    '#sb-mental-fill',
+      Physical_Health:  '#sb-physical-fill',
+      Money:            '#sb-money-fill',
+      Academic_Ability: '#sb-academic-fill',
+      English_Ability:  '#sb-english-fill',
+      AP:               '#sb-ap-pips',
+    };
+
+    const selector = targetMap[stat];
+    const anchor   = selector ? this._container?.querySelector(selector) : null;
+    const layer = document.getElementById('floating-text-layer');
+    if (!layer) return;
+
+    let x = window.innerWidth  / 2;
+    let y = window.innerHeight * 0.12;
+
+    if (anchor) {
+      const rect = anchor.getBoundingClientRect();
+      x = rect.left + rect.width  / 2;
+      y = rect.top  + rect.height / 2;
+    }
+
+    const type = delta > 0 ? 'positive' : 'negative';
+    const arrow = delta > 0 ? '↑' : '↓';
+    
+    // 动态翻译飘字 Label
+    const lang = StateManager.getLang();
+    let displayLabel = label;
+    if (lang === 'en') {
+        const enMap = { '心理健康': 'Mental', '身体健康': 'Physical', '资金': 'Money', '学力': 'Academic', '英语能力': 'English', '行动点': 'AP' };
+        displayLabel = enMap[label] || label;
+    }
+
+    const text = stat === 'AP' ? `${delta} AP` : `${displayLabel} ${arrow}`;
+
+    const el = document.createElement('span');
+    el.className   = `floating-text floating-text--${type}`;
+    el.textContent = text;
+    el.style.left  = `${x + (Math.random() - 0.5) * 40}px`;
+    el.style.top   = `${y - 10}px`;
+
+    layer.appendChild(el);
+    el.addEventListener('animationend', () => el.remove(), { once: true });
+  }
+}
